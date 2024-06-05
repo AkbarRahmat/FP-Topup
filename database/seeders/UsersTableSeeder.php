@@ -17,32 +17,42 @@ class UsersTableSeeder extends Seeder
     {
         User::create([
             'username' => 'adminuser',
-            'fullname' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => 'password', // Mutator di model User akan otomatis meng-hash password
             'phone' => '1234567890',
             'role' => 'admin',
             'remember_token' => Str::random(10),
+            'last_login' => now()
         ]);
 
         User::create([
             'username' => 'buyeruser',
-            'fullname' => 'Buyer User',
             'email' => 'buyer@example.com',
             'password' => 'password',
             'phone' => '1234567891',
             'role' => 'buyer',
             'remember_token' => Str::random(10),
+            'last_login' => now()
         ]);
 
         User::create([
             'username' => 'selleruser',
-            'fullname' => 'Seller User',
             'email' => 'seller@example.com',
             'password' => 'password',
             'phone' => '1234567892',
             'role' => 'seller',
             'remember_token' => Str::random(10),
+            'last_login' => now()
+        ]);
+
+        User::create([
+            'username' => 'usercoy',
+            'email' => 'usercoy@example.com',
+            'password' => 'password',
+            'phone' => '1234567892',
+            'role' => 'user',
+            'remember_token' => Str::random(10),
+            'last_login' => now()
         ]);
     }
 }
