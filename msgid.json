@@ -1,0 +1,21 @@
+{
+    "success_register": {
+        "text": "Register Berhasil",
+        "desc": "Terimakasih sudah registrasi"
+    },
+
+    "fail_email_phone": {
+        "text": "Email Atau Nomor HP tidak valid",
+        "desc": "Pastikan anda memasukkan Email atau Password dengan henar"
+    },
+
+    "fail_validation": {
+        "text": "Validasi Input Gagal",
+        "desc": ""
+    },
+
+    "fail_system": {
+        "text": "Terjadi kegagalan System",
+        "desc": ""
+    }
+}
