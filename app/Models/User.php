@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject; 
 
-class User extends Authenticatable
+
+class User extends Authenticatable implements JWTSubject 
 {
     use HasFactory, Notifiable, HasUuids;
 
@@ -55,4 +57,27 @@ class User extends Authenticatable
     {
         $this->attributes['password'] = bcrypt($password);
     }
+      /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+
+    use Notifiable;
+
+    protected $dates = [
+        'otp_expires_at',
+    ];
+    
+    public function getJWTIdentifier()
+    {
+        return $this->getKey(); // Return the user's ID
+    }
+    public function getJWTCustomClaims()
+    {
+        return []; // Return an empty array, or add custom claims if needed
+    }
+
+    
 }
+

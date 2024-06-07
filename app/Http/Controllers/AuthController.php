@@ -106,7 +106,42 @@ class AuthController extends Controller
             'Authorization' => $token
         ])->post($url, $data);
     }
+    public function login(Request $request)
+{
+    $credentials = $request->only('email', 'password');
 
+    if (!$token = Auth::guard('api')->attempt($credentials)) {
+        return response()->json([
+            "success" => false,
+            "message" => "Invalid credentials",
+            "error" => "Unauthorized"
+        ], 401);
+    }
+
+    return response()->json([
+        "success" => true,
+        "message" => "Login successful",
+        "token" => $token,
+        "token_type" => "bearer",
+        "expires_in" => config('jwt.ttl') * 60
+    ]);
+}
+
+    public function logout()
+    {
+        Auth::guard('api')->logout();
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => config('jwt.ttl') * 60
+        ]);
+    }
+}
   
 
-}
+
