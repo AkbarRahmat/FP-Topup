@@ -15,22 +15,7 @@ use Illuminate\Support\Facades\Http;
 class AuthController extends Controller
 {
 
-    public function register(Request $request) {
-        try {
-            return $this->handleRegister($request);
-        } catch (\Throwable $th) {
-            return response()->json([
-                "success" => false,
-                "message" => "fail_system",
-                "debug" => [
-                    "message" => $th->getMessage(),
-                    "line" => $th->getLine()
-                ]
-            ], 500);
-        }
-    }
-
-    private function handleRegister(Request $request)
+    public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             "username" => "required|string|max:255|unique:users",
@@ -69,7 +54,7 @@ class AuthController extends Controller
 
         // Input DB
         $resuser = User::create($user);
-        
+
         $payload = [
             "sub" => $resuser['id'],
             "iat" => now()->timestamp,
@@ -83,7 +68,7 @@ class AuthController extends Controller
         //     'action' => 'login akun',
         //     'useraccess' => $user['email'],
         // ]);
-        
+
         return response()->json([
             "success" => true,
             "message" => "success_register",
@@ -91,7 +76,8 @@ class AuthController extends Controller
         ], 200);
     }
 
-    private function sendOtpPhone($phone, $otp) {
+    private function sendOtpPhone($phone, $otp)
+    {
         $url = env('WHATSAPP_GATEAWAY_URL') . "/api/messages";
         $token = env('WHATSAPP_GATEAWAY_TOKEN');
 
@@ -100,32 +86,33 @@ class AuthController extends Controller
             "text" => "Kode Otp anda adalah\n*" . $otp . "*",
         ];
 
-        
+
         return Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => $token
         ])->post($url, $data);
     }
+
     public function login(Request $request)
-{
-    $credentials = $request->only('email', 'password');
+    {
+        $credentials = $request->only('email', 'password');
 
-    if (!$token = Auth::guard('api')->attempt($credentials)) {
+        if (!$token = Auth::guard('api')->attempt($credentials)) {
+            return response()->json([
+                "success" => false,
+                "message" => "Invalid credentials",
+                "error" => "Unauthorized"
+            ], 401);
+        }
+
         return response()->json([
-            "success" => false,
-            "message" => "Invalid credentials",
-            "error" => "Unauthorized"
-        ], 401);
+            "success" => true,
+            "message" => "Login successful",
+            "token" => $token,
+            "token_type" => "bearer",
+            "expires_in" => config('jwt.ttl') * 60
+        ]);
     }
-
-    return response()->json([
-        "success" => true,
-        "message" => "Login successful",
-        "token" => $token,
-        "token_type" => "bearer",
-        "expires_in" => config('jwt.ttl') * 60
-    ]);
-}
 
     public function logout()
     {
@@ -142,6 +129,6 @@ class AuthController extends Controller
         ]);
     }
 }
-  
+
 
 

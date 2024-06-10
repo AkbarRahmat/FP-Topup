@@ -14,6 +14,11 @@
         "desc": ""
     },
 
+    "fail_otp_send": {
+        "text": "Otp Gagal Dikirim",
+        "desc": ""
+    },
+
     "fail_system": {
         "text": "Terjadi kegagalan System",
         "desc": ""
