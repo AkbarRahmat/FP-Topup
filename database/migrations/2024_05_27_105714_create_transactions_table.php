@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('product_id');
             $table->foreign('product_id')->references('id')->on('products');        
             $table->string('payment_id');
-            $table->foreign('payment_id')->references('id')->on('payments');        
+            $table->foreign('payment_id')->references('id')->on('payments');
             $table->timestamps();
         });
     }

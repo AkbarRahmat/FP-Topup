@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\TransactionController;
 
 
 /*
@@ -30,6 +31,9 @@ Route::middleware('auth:api')->group(function () {
 });
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
-
+Route::middleware(['jwt.verify'])->group(function () {
+    Route::get('seller/transactions', [TransactionController::class, 'getTransactionsByGame']);
+    Route::get('seller/transactions/{product_id}', [TransactionController::class, 'getUserTransactionsByProduct']);
+});
 
 

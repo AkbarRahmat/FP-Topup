@@ -15,8 +15,9 @@ class CreatePaymentsTable extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->enum('status', ['pending', 'accepted', 'rejected']);
             $table->string('vendor');
+            $table->enum('status', ['pending', 'accepted', 'rejected']);
+            $table->integer('total_price')->default(0);
             $table->timestamps();
         });
     }
