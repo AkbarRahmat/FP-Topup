@@ -1,4 +1,14 @@
 {
+    "success_login": {
+        "text": "Login Berhasil",
+        "desc": "Selamat Datang dan silahkan melakukan sesuatu"
+    },
+
+    "fail_login": {
+        "text": "Login Gagal",
+        "desc": "Pastikan username atau password benar"
+    },
+
     "success_register": {
         "text": "Register Berhasil",
         "desc": "Terimakasih sudah registrasi"

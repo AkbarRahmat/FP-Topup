@@ -95,22 +95,29 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->only('username', 'password');
 
-        if (!$token = Auth::guard('api')->attempt($credentials)) {
+        if (!Auth::attempt($credentials)) {
             return response()->json([
                 "success" => false,
-                "message" => "Invalid credentials",
-                "error" => "Unauthorized"
+                "message" => "fail_login"
             ], 401);
         }
 
+        $resuser = Auth::user();
+
+        $payload = [
+            "sub" => $resuser['id'],
+            "iat" => now()->timestamp,
+            "exp" => now()->timestamp + 1200
+        ];
+
+        $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
+
         return response()->json([
             "success" => true,
-            "message" => "Login successful",
-            "token" => $token,
-            "token_type" => "bearer",
-            "expires_in" => config('jwt.ttl') * 60
+            "message" => "success_login",
+            "token" => "Bearer {$token}"
         ]);
     }
 
