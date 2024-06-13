@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             GameSeeder::class,
             ProductSeeder::class,
             PaymentSeeder::class,
-            //TransactionSeeder::class,
+            TransactionSeeder::class,
         ]);
         
     }

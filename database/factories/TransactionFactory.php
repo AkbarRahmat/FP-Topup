@@ -19,9 +19,10 @@ class TransactionFactory extends Factory
             'id' => $this->faker->uuid,
             'created_at' => now(),
             'updated_at' => now(),
-            'user_id' => User::factory(), // Menggunakan relasi factory untuk User
-            'product_id' => Product::factory(), // Menggunakan relasi factory untuk Product
-            'payment_id' => Payment::factory()->create()->id, // Anda dapat menggunakan Payment::factory() atau ID Payment yang ada
+            'user_id' => User::factory()->create()->id,
+            'product_id' => Product::factory()->create()->id,
+            'payment_id' => Payment::factory()->create()->id,
+
         ];
 }
 }

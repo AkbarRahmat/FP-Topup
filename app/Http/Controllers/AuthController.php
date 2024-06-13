@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Models\Log;
 use Illuminate\Support\Facades\Http;
+use App\Models\Product;
 
 class AuthController extends Controller
 {
@@ -135,7 +136,9 @@ class AuthController extends Controller
             'expires_in' => config('jwt.ttl') * 60
         ]);
     }
+  
 }
+
 
 
 

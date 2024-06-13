@@ -12,7 +12,6 @@ class PaymentFactory extends Factory
     public function definition()
     {
         return [
-            'id' => $this->faker->uuid,
             'vendor' => 'Qris',
             'status' => 'pending',
             'total_price' => $this->faker->numberBetween(1000, 100000) // Adding total_price with random integer values

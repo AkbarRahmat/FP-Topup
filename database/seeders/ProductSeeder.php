@@ -19,7 +19,7 @@ class ProductSeeder extends Seeder
             ]
         ]);*/
 
-        Product::factory()->count(10)->create();
+        //Product::factory()->count(10)->create();
     }
 }
 
