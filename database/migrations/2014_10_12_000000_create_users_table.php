@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('password');
             $table->enum('role', ['admin', 'buyer','seller','user'])->default('user');
-            $table->enum('status', ['pending', 'verified'])->default('pending');
+            $table->enum('status', ['pending', 'limited', 'verified'])->default('pending');
             $table->string('otp_verification')->nullable();
             $table->timestamp('last_login')->nullable();
             $table->timestamps();

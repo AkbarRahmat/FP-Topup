@@ -16,14 +16,16 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('user_id');
-            $table->foreign('user_id')->references('id')->on('users');        
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->enum('status', ['pending', 'processed', 'success'])->default('pending');
             $table->string('product_id');
-            $table->foreign('product_id')->references('id')->on('products');        
+            $table->foreign('product_id')->references('id')->on('products');
             $table->string('payment_id');
             $table->foreign('payment_id')->references('id')->on('payments');
-            $table->string('username_game');
-            $table->string('user_id_game')->min(9);
-            $table->string('user_server_game')->nullable();
+            $table->string('processed_by')->nullable();
+            $table->string('usergame_id')->nullable();
+            $table->string('usergame_server')->nullable();
+            $table->string('usergame_name')->nullable();
             $table->timestamps();
         });
     }
