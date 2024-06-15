@@ -35,7 +35,8 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'failed_get_transaction_empty',
-            ], 204);
+                'data' => []
+            ]);
         }
 
         return response()->json([
@@ -44,7 +45,7 @@ class TransactionController extends Controller
             'data' => $result
         ]);
     }
-    
+
     public function getUserTransactionsByGame($game_target)
     {
         $transactions = DB::table('transactions');
@@ -53,7 +54,7 @@ class TransactionController extends Controller
         $transactions->join('games', 'products.game_id', '=', 'games.id');
         $transactions->join('payments', 'transactions.payment_id', '=', 'payments.id');
         $transactions->select('users.username', 'products.name as product_name', 'games.name as game_name', 'products.price as product_price', 'payments.total_price as payment_price','transactions.username_game','transactions.user_id_game','transactions.user_server_game');
-        
+
         if (isUUID($game_target)) {
             $transactions->where('products.game_id', $game_target);
         } else {
@@ -65,7 +66,8 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'failed_get_transaction_empty',
-            ], 204);
+                'data' => []
+            ]);
         }
 
         return response()->json([
@@ -73,11 +75,11 @@ class TransactionController extends Controller
             'message' => 'succes_get_trasaction_ingame_user',
             'data' => $result
         ]);
-        
+
         // 'success' => true,
         // 'message' => 'Pesan berhasil mendapatkan transaksi di dalam game user',
         // 'data' => $game_id
     }
- 
-    
+
+
 }

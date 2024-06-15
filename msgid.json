@@ -1,4 +1,17 @@
 {
+    "success_get_transaction_game_user": {
+        "text": "Transaksi Ditemukan"
+    },
+
+    "success_get_transaction_game_total": {
+        "text": "Transaksi Ditemukan"
+    },
+
+    "failed_get_transaction_empty": {
+        "text": "Transaksi Kosong",
+        "desc": "Pastikan Untuk Mengecek ID"
+    },
+
     "success_login": {
         "text": "Login Berhasil",
         "desc": "Selamat Datang dan silahkan melakukan sesuatu"
@@ -11,7 +24,7 @@
 
     "success_register": {
         "text": "Register Berhasil",
-        "desc": "Terimakasih sudah registrasi"
+        "desc": "Terimakasih sudah registrasi, silahkan login"
     },
 
     "fail_email_phone": {
@@ -20,17 +33,15 @@
     },
 
     "fail_validation": {
-        "text": "Validasi Input Gagal",
-        "desc": ""
+        "text": "Validasi Input Gagal"
     },
 
     "fail_otp_send": {
         "text": "Otp Gagal Dikirim",
-        "desc": ""
+        "desc": "Pastikan Nomor HP / Email Benar"
     },
 
     "fail_system": {
-        "text": "Terjadi kegagalan System",
-        "desc": ""
+        "text": "Terjadi kegagalan System"
     }
 }
