@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
-    public function getAllTransactionsGameTotal()
+    public function getAllTransactionsGameTotal($status)//$status = null
     {
         $transactions = DB::table('transactions');
         $transactions->join('users', 'transactions.user_id', '=', 'users.id');
@@ -17,21 +17,34 @@ class TransactionController extends Controller
         $transactions->join('games', 'products.game_id', '=', 'games.id');
         $transactions->join('payments', 'transactions.payment_id', '=', 'payments.id');
         $transactions->select(
+            'transactions.status',
             'games.name as game_name',
             DB::raw('SUM(payments.total_price) as price_total'),
             DB::raw('COUNT(transactions.user_id) as user_total')
         );
-        $transactions->groupBy('games.name');
+
+        // Add condition to filter by status if provided
+        if ($status && $status != 'all') {
+            $transactions->where('transactions.status', $status);
+        }
+
+        $transactions->groupBy('transactions.status','games.name');
         $result = $transactions->get();
+
+        if ($result->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'failed_get_transaction_empty',
+            ], 204);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'success_get_transaction_game_total',
             'data' => $result
         ]);
-
     }
-
+    
     public function getUserTransactionsByGame($game_target)
     {
         $transactions = DB::table('transactions');
@@ -52,7 +65,7 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'failed_get_transaction_empty',
-            ], 404);
+            ], 204);
         }
 
         return response()->json([
