@@ -28,3 +28,12 @@ if(!function_exists('validatorPhone')){
         return $text;
     }
 }
+
+if(!function_exists('isUUID')){
+    
+    function isUUID($text){
+        if (!$text) {return null;}
+        
+        return preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $text);
+    }
+}

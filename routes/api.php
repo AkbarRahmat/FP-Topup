@@ -29,11 +29,7 @@ Route::middleware('auth:api')->group(function () {
         return $request->user();
     });
 });
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp']);
-Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
-Route::middleware(['jwt.verify'])->group(function () {
-    Route::get('seller/transactions', [TransactionController::class, 'getTransactionsByGame']);
-    Route::get('seller/transactions/{product_id}', [TransactionController::class, 'getUserTransactionsByProduct']);
-});
-
-
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendOtp']);
+Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword']);
+Route::get('/transactions/game', [TransactionController::class, 'getAllTransactionsGameTotal']);
+Route::get('/transactions/game/{game_target}', [TransactionController::class, 'getUserTransactionsByGame']);

@@ -22,6 +22,9 @@ class TransactionFactory extends Factory
             'user_id' => User::factory()->create()->id,
             'product_id' => Product::factory()->create()->id,
             'payment_id' => Payment::factory()->create()->id,
+            'username_game' => $this->faker->userName,
+            'user_id_game' => $this->faker->numerify('#########'), // minimal 9 digit
+            'user_server_game' => $this->faker->numberBetween(1, 99999)
 
         ];
 }

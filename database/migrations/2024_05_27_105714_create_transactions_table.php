@@ -21,6 +21,9 @@ return new class extends Migration
             $table->foreign('product_id')->references('id')->on('products');        
             $table->string('payment_id');
             $table->foreign('payment_id')->references('id')->on('payments');
+            $table->string('username_game');
+            $table->string('user_id_game')->min(9);
+            $table->string('user_server_game')->nullable();
             $table->timestamps();
         });
     }
