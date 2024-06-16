@@ -18,6 +18,7 @@ class TransactionController extends Controller
         $transactions->join('payments', 'transactions.payment_id', '=', 'payments.id');
         $transactions->select(
             'transactions.status',
+            'products.game_id as game_id',
             'games.name as game_name',
             DB::raw('SUM(payments.total_price) as price_total'),
             DB::raw('COUNT(transactions.user_id) as user_total')
@@ -28,7 +29,7 @@ class TransactionController extends Controller
             $transactions->where('transactions.status', $status);
         }
 
-        $transactions->groupBy('transactions.status','games.name');
+        $transactions->groupBy('transactions.status', 'products.game_id', 'games.name');
         $result = $transactions->get();
 
         if ($result->isEmpty()) {
@@ -46,14 +47,14 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function getUserTransactionsByGame($game_target)
+    public function getUserTransactionsByGame($status, $game_target)
     {
         $transactions = DB::table('transactions');
         $transactions->join('users', 'transactions.user_id', '=', 'users.id');
         $transactions->join('products', 'transactions.product_id', '=', 'products.id');
         $transactions->join('games', 'products.game_id', '=', 'games.id');
         $transactions->join('payments', 'transactions.payment_id', '=', 'payments.id');
-        $transactions->select('users.username', 'products.name as product_name', 'games.name as game_name', 'products.price as product_price', 'payments.total_price as payment_price','transactions.username_game','transactions.user_id_game','transactions.user_server_game');
+        $transactions->select('products.name as product_name', 'games.name as game_name', 'products.price as product_price', 'payments.total_price as payment_price','transactions.usergame_name','transactions.usergame_id','transactions.usergame_server');
 
         if (isUUID($game_target)) {
             $transactions->where('products.game_id', $game_target);
