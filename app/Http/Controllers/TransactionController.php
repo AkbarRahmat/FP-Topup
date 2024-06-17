@@ -24,6 +24,7 @@ class TransactionController extends Controller
             DB::raw('SUM(payments.total_price) as price_total'),
             DB::raw('COUNT(transactions.user_id) as user_total')
         );
+        $transactions->where('products.category', 'game');
 
         // Filter Status
         if ($status && $status != 'all') {
@@ -59,6 +60,7 @@ class TransactionController extends Controller
         $transactions->join('games', 'products.game_id', '=', 'games.id');
         $transactions->join('payments', 'transactions.payment_id', '=', 'payments.id');
         $transactions->select('products.name as product_name', 'games.name as game_name', 'products.price as product_price', 'payments.total_price as payment_price','transactions.usergame_name','transactions.usergame_id','transactions.usergame_server');
+        $transactions->where('products.category', 'game');
 
         // Check UUID
         if (isUUID($game_target)) {

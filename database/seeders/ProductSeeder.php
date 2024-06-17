@@ -14,7 +14,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Diamond',
                 'price' => 4830,
-                'category_id' => '9c426250-a032-4e9f-9add-66b6260d880b',
+                'category' => 'game',
                 'game_id' => '9c4265f8-9586-40ac-96db-8d8cb5e1d165'
             ]
         ]);*/

@@ -10,13 +10,13 @@ class Product extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $fillable = ['name','price', 'category_id', 'game_id'];
+    protected $fillable = ['name','price', 'category', 'game_id'];
 
     public function game()
     {
         return $this->belongsTo(Game::class);
     }
-    
+
     public function transactions()
     {
         return $this->hasMany(Transaction::class);

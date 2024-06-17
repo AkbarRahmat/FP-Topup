@@ -17,9 +17,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->integer('price');
-            $table->string('category_id');
-            $table->foreign('category_id')->references('id')->on('categories');
-            $table->string('game_id');
+            $table->enum('category', ['game', 'pulsa']);
+            $table->string('game_id')->nullable();
             $table->foreign('game_id')->references('id')->on('games');
             $table->timestamps();
         });
