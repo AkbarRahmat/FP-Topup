@@ -10,6 +10,7 @@ class Product extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $table = 'products';
     protected $fillable = ['name','price', 'category', 'game_id'];
 
     public function game()

@@ -20,12 +20,11 @@ return new class extends Migration
             $table->enum('status', ['pending', 'processed', 'success'])->default('pending');
             $table->string('product_id');
             $table->foreign('product_id')->references('id')->on('products');
+            $table->string('usergame_id')->nullable();
+            $table->foreign('usergame_id')->references('id')->on('usergames');
             $table->string('payment_id');
             $table->foreign('payment_id')->references('id')->on('payments');
             $table->string('processed_by')->nullable();
-            $table->string('usergame_id')->nullable();
-            $table->string('usergame_server')->nullable();
-            $table->string('usergame_name')->nullable();
             $table->timestamps();
         });
     }

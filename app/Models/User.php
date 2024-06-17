@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject; 
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 
-class User extends Authenticatable implements JWTSubject 
+class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable, HasUuids;
 
@@ -19,6 +19,7 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array
      */
+    protected $table = 'users';
     protected $fillable = [
         'username',
         'email',
@@ -27,7 +28,7 @@ class User extends Authenticatable implements JWTSubject
         'otp_verification',
         'role'
 
-    
+
     ];
 
     /**
@@ -70,7 +71,7 @@ class User extends Authenticatable implements JWTSubject
     protected $dates = [
         'otp_expires_at',
     ];
-    
+
     public function getJWTIdentifier()
     {
         return $this->getKey(); // Return the user's ID
@@ -80,6 +81,6 @@ class User extends Authenticatable implements JWTSubject
         return []; // Return an empty array, or add custom claims if needed
     }
 
-    
+
 }
 
