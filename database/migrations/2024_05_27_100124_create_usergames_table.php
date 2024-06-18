@@ -15,7 +15,9 @@ class CreateUserGamesTable extends Migration
     {
         Schema::create('usergames', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('username');
+            $table->string('globalid');
+            $table->string('server')->nullable();
+            $table->string('username')->nullable();
             $table->timestamps();
         });
     }

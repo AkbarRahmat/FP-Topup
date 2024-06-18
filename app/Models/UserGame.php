@@ -11,5 +11,5 @@ class UserGame extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'usergames';
-    protected $fillable = ['username'];
+    protected $fillable = ['globalid', 'server', 'username'];
 }

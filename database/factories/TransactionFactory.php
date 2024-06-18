@@ -14,16 +14,25 @@ class TransactionFactory extends Factory
     protected $model = Transaction::class;
 
     public function definition()
-{
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+        $usergame = UserGame::factory()->create();
+        $payment = Payment::factory()->create([
+            'product_price' => $product['price'],
+            'seller_cost' => 1000,
+            'service_cost' => 1000,
+            'total_cost' => $product['price'] + 2000,
+            'paid_price' => $product['price'] + 2000
+        ]);
 
         return [
-            'id' => $this->faker->uuid,
             'created_at' => now(),
             'updated_at' => now(),
-            'user_id' => User::factory()->create()->id,
-            'product_id' => Product::factory()->create()->id,
-            'usergame_id' => UserGame::factory()->create()->id,
-            'payment_id' => Payment::factory()->create()->id,
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'usergame_id' => $usergame->id,
+            'payment_id' => $payment->id,
         ];
 }
 }

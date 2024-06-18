@@ -11,7 +11,9 @@ class Payment extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'payments';
-    protected $fillable = ['vendor', 'status'];
+    protected $fillable = [
+        'vendor', 'status', 'product_price', 'seller_cost', 'service_cost', 'total_cost', 'paid_price'
+    ];
 
     public function transactions()
     {

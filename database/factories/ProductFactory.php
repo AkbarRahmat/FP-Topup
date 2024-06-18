@@ -12,8 +12,7 @@ class ProductFactory extends Factory
     public function definition()
     {
         $existingNames = Product::pluck('name')->toArray();
-        $availableNames = array_diff(['11 DM', '50 DM', '150 DM', '250 DM', '500 DM', '1000 DM', '1500 DM'], $existingNames);
-
+        $availableNames = array_diff(generateArrayStringNumber(5, 2000, '%d DM'), $existingNames);
 
         return [
             'name' => $this->faker->randomElement($availableNames),

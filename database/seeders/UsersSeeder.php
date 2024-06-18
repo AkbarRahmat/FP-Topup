@@ -15,7 +15,7 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        User::create([
+        User::firstOrCreate([
             'username' => 'adminuser',
             'email' => 'admin@example.com',
             'password' => 'password', // Mutator di model User akan otomatis meng-hash password

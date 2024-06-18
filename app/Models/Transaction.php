@@ -12,7 +12,7 @@ class Transaction extends Model
 
     protected $table = 'transactions';
     protected $fillable = [
-        'user_id', 'product_id', 'payment_id', 'usergame_id', 'price'
+        'user_id', 'product_id', 'payment_id', 'usergame_id'
     ];
 
     public function user()

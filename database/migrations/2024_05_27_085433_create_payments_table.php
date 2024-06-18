@@ -17,7 +17,11 @@ class CreatePaymentsTable extends Migration
             $table->uuid('id')->primary();
             $table->string('vendor');
             $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
-            $table->integer('total_price')->default(0);
+            $table->integer('product_price');
+            $table->integer('seller_cost');
+            $table->integer('service_cost');
+            $table->integer('total_cost');
+            $table->integer('paid_price');
             $table->timestamps();
         });
     }

@@ -14,7 +14,11 @@ class PaymentFactory extends Factory
         return [
             'vendor' => 'Qris',
             'status' => 'pending',
-            'total_price' => $this->faker->numberBetween(1000, 100000) // Adding total_price with random integer values
+            'product_price' => 10000,
+            'seller_cost' => 1000,
+            'service_cost' => 1000,
+            'total_cost' => 12000,
+            'paid_price' => 12000
         ];
     }
 }

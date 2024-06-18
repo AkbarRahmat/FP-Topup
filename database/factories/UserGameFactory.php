@@ -17,7 +17,9 @@ class UserGameFactory extends Factory
     public function definition()
     {
         return [
-            'username' => $this->faker->userName(),
+            'globalid' => $this->faker->unique()->numberBetween(100000001, 999999999),
+            'server' => $this->faker->unique()->numberBetween(1000, 9999),
+            'username' => $this->faker->unique()->userName(),
         ];
     }
 }
