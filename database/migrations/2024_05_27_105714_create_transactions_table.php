@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('payment_id');
             $table->foreign('payment_id')->references('id')->on('payments');
             $table->string('processed_by')->nullable();
+            $table->string('processed_proof')->nullable();
             $table->timestamps();
         });
     }

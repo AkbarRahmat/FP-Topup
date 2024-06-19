@@ -5,10 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Product;
+use App\Models\Payment;
+use App\Models\Game;
+use App\Models\User;
+use App\Models\UserGame;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
+
+
 
 class TransactionController extends Controller
 {
+    
     public function getAllTransactionsGameTotal($status)
     {
         // Query
@@ -92,6 +102,112 @@ class TransactionController extends Controller
             'data' => $result
         ]);
     }
+    public function updateTransactionStatus(Request $request, $id)
+    {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:processed,success',
+            'processed_by' => 'nullable|exists:users,id',
+            'processed_proof' => 'required_if:status,success|image|max:2048', // Menambahkan validasi untuk processed_proof
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors(),
+            ], 400);
+        }
 
+        // Cari transaksi berdasarkan ID
+        $transaction = Transaction::find($id);
+
+        if (!$transaction) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction not found',
+            ], 404);
+        }
+
+        // Update status transaksi
+        $transaction->status = $request->input('status');
+
+        // Update processed_by jika disertakan
+        if ($request->has('processed_by')) {
+            $transaction->processed_by = $request->input('processed_by');
+        }
+
+        // Mengelola processed_proof jika disertakan
+        if ($request->hasFile('processed_proof')) {
+            $file = $request->file('processed_proof');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('proofs', $fileName, 'public');
+            $transaction->processed_proof = $filePath;
+        }
+
+        // Simpan transaksi yang telah diperbarui
+        $transaction->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaction status updated successfully',
+            'data' => $transaction,
+        ]);
+    }
+   public function getTransactionDetail($transaction_id): JsonResponse
+    {
+        // Get transaction details
+        $transaction = Transaction::with(['user', 'usergame', 'product', 'payment'])
+            ->find($transaction_id);
+
+        if (!$transaction) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction not found',
+            ], 404);
+        }
+
+        // Get game name from products table
+        $product = $transaction->product;
+        $game_id = $product->game_id;
+
+        $game = Game::find($game_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaction detail',
+            'data' => [
+                'transaction' => [
+                    'status' => $transaction->status,
+                    'processed_by' => $transaction->processed_by,
+                    'processed_proof' => $transaction->processed_proof,
+                    'created_at' => $transaction->created_at,
+                    'updated_at' => $transaction->updated_at,
+                ],
+                'game' => [
+                    'name' => $game ? $game->name : null,
+                ],
+                'user' => [
+                    'username' => optional($transaction->user)->username,
+                    'phone' => optional($transaction->user)->phone,
+                ],
+                'usergame' => [
+                    'globalid' => optional($transaction->usergame)->globalid,
+                    'server' => optional($transaction->usergame)->server,
+                    'username' => optional($transaction->usergame)->username,
+                ],
+                'product' => [
+                    'name' => optional($product)->name,
+                    'price' => optional($product)->price,
+                ],
+                'payment' => [
+                    'status' => optional($transaction->payment)->status,
+                    'product_price' => optional($transaction->payment)->product_price,
+                    'seller_cost' => optional($transaction->payment)->seller_cost,
+                    'service_cost' => optional($transaction->payment)->service_cost,
+                    'total_cost' => optional($transaction->payment)->total_cost,
+                    'paid_price' => optional($transaction->payment)->paid_price,
+                ],
+            ]
+        ]);
+    }
 }
