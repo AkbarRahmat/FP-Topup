@@ -21,8 +21,8 @@ class TransactionController extends Controller
             'transactions.status',
             'products.game_id as game_id',
             'games.name as game_name',
-            DB::raw('SUM(payments.paid_price) as paid_total'),
-            DB::raw('COUNT(transactions.user_id) as user_total')
+            DB::raw('CAST(SUM(payments.paid_price) AS UNSIGNED) as paid_total'),
+            DB::raw('CAST(COUNT(transactions.user_id) AS UNSIGNED) as user_total')
         );
         $transactions->where('products.category', 'game');
 
@@ -60,7 +60,7 @@ class TransactionController extends Controller
         $transactions->join('games', 'products.game_id', '=', 'games.id');
         $transactions->join('usergames', 'transactions.usergame_id', '=', 'usergames.id');
         $transactions->join('payments', 'transactions.payment_id', '=', 'payments.id');
-        $transactions->select('products.name as product_name', 'games.name as game_name', 'products.price as lasted_price', 'payments.product_price as product_price', 'payments.paid_price as paid_price', 'usergames.username as usergame_name');
+        $transactions->select('transactions.id as transaction_id', 'transactions.status as transaction_status', 'products.name as product_name', 'games.name as game_name', 'products.price as lasted_price', 'payments.product_price as product_price', 'payments.paid_price as paid_price', 'usergames.username as usergame_name');
         $transactions->where('products.category', 'game');
 
         // Check UUID
