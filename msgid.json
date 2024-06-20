@@ -1,4 +1,12 @@
 {
+    "success_get_product": {
+        "text": "Prodak Ditemukan"
+    },
+
+    "fail_get_product_notfound": {
+        "text": "Produk tidak Ditemukan"
+    },
+
     "success_get_transaction": {
         "text": "Transaksi Ditemukan"
     },
@@ -49,4 +57,5 @@
     "fail_system": {
         "text": "Terjadi kegagalan System"
     }
+
 }
