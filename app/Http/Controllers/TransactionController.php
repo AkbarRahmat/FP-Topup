@@ -70,7 +70,7 @@ class TransactionController extends Controller
         $transactions->join('games', 'products.game_id', '=', 'games.id');
         $transactions->join('usergames', 'transactions.usergame_id', '=', 'usergames.id');
         $transactions->join('payments', 'transactions.payment_id', '=', 'payments.id');
-        $transactions->select('transactions.id as transaction_id', 'transactions.status as transaction_status', 'products.name as product_name', 'games.name as game_name', 'products.price as lasted_price', 'payments.product_price as product_price', 'payments.paid_price as paid_price', 'usergames.username as usergame_name');
+        $transactions->select('transactions.id as transaction_id', 'transactions.status as transaction_status', 'products.name as product_name', 'games.name as game_name', 'products.price as lasted_price', 'payments.product_price as product_price', 'payments.paid_price as paid_price', 'usergames.username as usergame_username', 'usergames.globalid as usergame_globalid');
         $transactions->where('products.category', 'game');
 
         // Check UUID

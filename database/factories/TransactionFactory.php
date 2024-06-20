@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Game;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Product;
@@ -17,7 +18,16 @@ class TransactionFactory extends Factory
     {
         $user = User::factory()->create();
         $product = Product::factory()->create();
-        $usergame = UserGame::factory()->create();
+        $game = Game::find($product['game_id']);
+
+        // Usergame Data
+        if ($game['code'] == 'pubgm') {
+            $usergame = UserGame::factory()->create(['username' => null, 'server' => null]);
+        } else if($game['code'] == 'epep') {
+            $usergame = UserGame::factory()->create(['server' => null]);
+        } else {
+            $usergame = UserGame::factory()->create();
+        }
 
         // Payment Data
         $payment_data = [
@@ -40,10 +50,10 @@ class TransactionFactory extends Factory
         return [
             'created_at' => now(),
             'updated_at' => now(),
-            'user_id' => $user->id,
-            'product_id' => $product->id,
-            'usergame_id' => $usergame->id,
-            'payment_id' => $payment->id,
+            'user_id' => $user['id'],
+            'product_id' => $product['id'],
+            'usergame_id' => $usergame['id'],
+            'payment_id' => $payment['id'],
         ];
 }
 }

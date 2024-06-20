@@ -11,14 +11,21 @@ class ProductFactory extends Factory
 
     public function definition()
     {
+        $game = Game::select('code', 'id')->inRandomOrder()->first();
+        if ($game['code'] == 'pubgm') {
+            $itemFormat = '%d UC';
+        } else {
+            $itemFormat = '%d DM';
+        }
+
         $existingNames = Product::pluck('name')->toArray();
-        $availableNames = array_diff(generateArrayStringNumber(5, 2000, '%d DM'), $existingNames);
+        $availableNames = array_diff(generateArrayStringNumber(5, 2000, $itemFormat), $existingNames);
 
         return [
             'name' => $this->faker->randomElement($availableNames),
             'price' => $this->faker->numberBetween(3000, 439000),
             'category' => 'game',
-            'game_id' => '9c4265f8-9586-40ac-96db-8d8cb5e1d165'
+            'game_id' => $game['id']
         ];
     }
 }
