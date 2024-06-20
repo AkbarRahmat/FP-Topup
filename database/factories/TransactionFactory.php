@@ -18,14 +18,24 @@ class TransactionFactory extends Factory
         $user = User::factory()->create();
         $product = Product::factory()->create();
         $usergame = UserGame::factory()->create();
-        $payment = Payment::factory()->create([
+
+        // Payment Data
+        $payment_data = [
             'status' => 'success',
             'product_price' => $product['price'],
             'seller_cost' => 1000,
             'service_cost' => 1000,
-            'total_cost' => $product['price'] + 2000,
-            'paid_price' => $product['price'] + 2000
-        ]);
+            'total_cost' => 0,
+            'paid_price' => 0,
+            'refund_cost' => 0,
+            'debt_cost' => 0
+        ];
+
+        // Calculate
+        calculateTransactionTotalCost($payment_data, true);
+        calculateTransactionDebtAndRefund($payment_data);
+
+        $payment = Payment::factory()->create($payment_data);
 
         return [
             'created_at' => now(),

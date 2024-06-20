@@ -26,7 +26,8 @@
         "files": [
             "app/Helpers/MessageError.php",
             "app/Helpers/GeneratorData.php",
-            "app/Helpers/ValidatorData.php"
+            "app/Helpers/ValidatorData.php",
+            "app/Helpers/CalculateData.php"
         ],
         "psr-4": {
             "App\\": "app/",
