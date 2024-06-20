@@ -216,6 +216,8 @@ class TransactionController extends Controller
                     'service_cost' => $payment->service_cost,
                     'total_cost' => $payment->total_cost,
                     'paid_price' => $payment->paid_price,
+                    'refund_cost' => $payment->refund_cost,
+                    'debt_cost' => $payment->debt_cost
                 ],
             ]
         ]);
