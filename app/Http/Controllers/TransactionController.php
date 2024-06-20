@@ -18,7 +18,7 @@ use Illuminate\Http\JsonResponse;
 
 class TransactionController extends Controller
 {
-    
+
     public function getAllTransactionsGameTotal($status)
     {
         // Query
@@ -49,14 +49,14 @@ class TransactionController extends Controller
         if ($result->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'failed_get_transaction_empty',
+                'message' => 'fail_get_transaction_empty',
                 'data' => []
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'success_get_transaction_game_total',
+            'message' => 'success_get_transaction',
             'data' => $result
         ]);
     }
@@ -91,14 +91,14 @@ class TransactionController extends Controller
         if ($result->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'failed_get_transaction_empty',
+                'message' => 'fail_get_transaction_empty',
                 'data' => []
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'succes_get_trasaction_ingame_user',
+            'message' => 'success_get_transaction',
             'data' => $result
         ]);
     }
@@ -114,7 +114,8 @@ class TransactionController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => $validator->errors(),
+                "message" => "fail_validation",
+                "data" => $validator->errors()
             ], 400);
         }
 
@@ -124,7 +125,7 @@ class TransactionController extends Controller
         if (!$transaction) {
             return response()->json([
                 'success' => false,
-                'message' => 'Transaction not found',
+                'message' => 'fail_get_transaction_notfound',
             ], 404);
         }
 
@@ -149,32 +150,40 @@ class TransactionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Transaction status updated successfully',
+            'message' => 'success_update_transaction',
             'data' => $transaction,
         ]);
     }
    public function getTransactionDetail($transaction_id): JsonResponse
     {
         // Get transaction details
-        $transaction = Transaction::with(['user', 'usergame', 'product', 'payment'])
-            ->find($transaction_id);
+        $transaction = Transaction::with(['user', 'usergame', 'product', 'payment'])->find($transaction_id);
 
         if (!$transaction) {
             return response()->json([
                 'success' => false,
-                'message' => 'Transaction not found',
+                'message' => 'fail_get_transaction_notfound'
             ], 404);
         }
 
-        // Get game name from products table
-        $product = $transaction->product;
-        $game_id = $product->game_id;
+        // Get Table Data
+        $user = optional($transaction->user);
+        $product = optional($transaction->product);
+        $game = optional($product->game);
+        $usergame = optional($transaction->usergame);
+        $payment = optional($transaction->payment);
 
-        $game = Game::find($game_id);
+        // Check Game
+        if (!$game->id || !$usergame->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'fail_get_transaction_notfound'
+            ], 404);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Transaction detail',
+            'message' => 'success_get_transaction',
             'data' => [
                 'transaction' => [
                     'status' => $transaction->status,
@@ -184,28 +193,29 @@ class TransactionController extends Controller
                     'updated_at' => $transaction->updated_at,
                 ],
                 'game' => [
-                    'name' => $game ? $game->name : null,
+                    'id' => $game->id,
+                    'name' => $game->name,
                 ],
                 'user' => [
-                    'username' => optional($transaction->user)->username,
-                    'phone' => optional($transaction->user)->phone,
+                    'username' => $user->username,
+                    'phone' => $user->phone,
                 ],
                 'usergame' => [
-                    'globalid' => optional($transaction->usergame)->globalid,
-                    'server' => optional($transaction->usergame)->server,
-                    'username' => optional($transaction->usergame)->username,
+                    'globalid' => $usergame->globalid,
+                    'server' => $usergame->server,
+                    'username' => $usergame->username,
                 ],
                 'product' => [
-                    'name' => optional($product)->name,
-                    'price' => optional($product)->price,
+                    'name' => $product->name,
+                    'price' => $product->price,
                 ],
                 'payment' => [
-                    'status' => optional($transaction->payment)->status,
-                    'product_price' => optional($transaction->payment)->product_price,
-                    'seller_cost' => optional($transaction->payment)->seller_cost,
-                    'service_cost' => optional($transaction->payment)->service_cost,
-                    'total_cost' => optional($transaction->payment)->total_cost,
-                    'paid_price' => optional($transaction->payment)->paid_price,
+                    'status' => $payment->status,
+                    'product_price' => $payment->product_price,
+                    'seller_cost' => $payment->seller_cost,
+                    'service_cost' => $payment->service_cost,
+                    'total_cost' => $payment->total_cost,
+                    'paid_price' => $payment->paid_price,
                 ],
             ]
         ]);

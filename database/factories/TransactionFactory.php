@@ -19,6 +19,7 @@ class TransactionFactory extends Factory
         $product = Product::factory()->create();
         $usergame = UserGame::factory()->create();
         $payment = Payment::factory()->create([
+            'status' => 'success',
             'product_price' => $product['price'],
             'seller_cost' => 1000,
             'service_cost' => 1000,

@@ -31,9 +31,7 @@ Route::middleware('auth:api')->group(function () {
 });
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword']);
-// Route::get('/transactions/game', [TransactionController::class, 'getAllTransactionsGameTotal']);
-// Route::get('/transactions/game/{game_target}', [TransactionController::class, 'getUserTransactionsByGame']);
 Route::get('/transactions/game/{status}', [TransactionController::class, 'getAllTransactionsGameTotal']);
 Route::get('/transactions/game/{status}/{game_target}', [TransactionController::class, 'getUserTransactionsByGame']);
-Route::post('/transactions/{id}', [TransactionController::class, 'updateTransactionStatus']);
-Route::get('/transaction/game/{transaction_id}', [TransactionController::class, 'getTransactionDetail']);
+Route::post('/transactions/detail/{id}', [TransactionController::class, 'updateTransactionStatus']);
+Route::get('/transactions/detail/{transaction_id}', [TransactionController::class, 'getTransactionDetail']);

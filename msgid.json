@@ -1,13 +1,18 @@
 {
-    "success_get_transaction_game_user": {
+    "success_get_transaction": {
         "text": "Transaksi Ditemukan"
     },
 
-    "success_get_transaction_game_total": {
-        "text": "Transaksi Ditemukan"
+    "success_update_transaction": {
+        "text": "Transaksi Diupdate"
     },
 
-    "failed_get_transaction_empty": {
+    "fail_get_transaction_notfound": {
+        "text": "Transaksi Tidak Ditemukan",
+        "desc": "Pastikan Untuk Mengecek ID"
+    },
+
+    "fail_get_transaction_empty": {
         "text": "Transaksi Kosong",
         "desc": "Pastikan Untuk Mengecek ID"
     },
