@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TransactionController;
@@ -38,3 +39,5 @@ Route::patch('/transactions/detail/{id}', [TransactionController::class, 'update
 Route::get('/transactions/detail/{transaction_id}', [TransactionController::class, 'getTransactionDetail']);
 Route::get('/products/game/{game_id}', [ProductController::class, 'getProductsByGame']);
 Route::get('/products/game', [ProductController::class, 'getGames']);
+Route::post('/file/image', [FileController::class, 'uploadImage']);
+Route::delete('/file/image/{filename}', [FileController::class, 'deleteImage']);
