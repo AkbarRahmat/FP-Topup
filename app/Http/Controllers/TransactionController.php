@@ -108,7 +108,7 @@ class TransactionController extends Controller
         $validator = Validator::make($request->all(), [
             'status' => 'required|in:processed,success',
             'processed_by' => 'nullable|exists:users,id',
-            'processed_proof' => 'required_if:status,success|image|max:2048', // Menambahkan validasi untuk processed_proof
+            'processed_proof' => 'required_if:status,success|url', // Mengubah validasi untuk menerima URL
         ]);
 
         if ($validator->fails()) {
@@ -138,12 +138,34 @@ class TransactionController extends Controller
         }
 
         // Mengelola processed_proof jika disertakan
-        if ($request->hasFile('processed_proof')) {
-            $file = $request->file('processed_proof');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('proofs', $fileName, 'public');
+      // Mengelola processed_proof jika disertakan sebagai URL
+if ($request->has('processed_proof')) {
+    $url = $request->input('processed_proof');
+    
+    // Validasi URL (opsional, tapi disarankan)
+    if (filter_var($url, FILTER_VALIDATE_URL)) {
+        // Mengambil konten gambar dari URL
+        $imageContent = file_get_contents($url);
+        
+        if ($imageContent !== false) {
+            // Membuat nama file unik
+            $fileName = time() . '_' . basename($url);
+            
+            // Menyimpan gambar ke penyimpanan lokal
+            $filePath = 'proofs/' . $fileName;
+            Storage::disk('public')->put($filePath, $imageContent);
+            
+            // Menyimpan path file ke database
             $transaction->processed_proof = $filePath;
+        } else {
+            // Handle error jika gagal mengambil gambar
+            return response()->json(['error' => 'Gagal mengambil gambar dari URL'], 400);
         }
+    } else {
+        // Handle error jika URL tidak valid
+        return response()->json(['error' => 'URL tidak valid'], 400);
+    }
+}
 
         // Simpan transaksi yang telah diperbarui
         $transaction->save();

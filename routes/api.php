@@ -34,7 +34,7 @@ Route::post('forgot-password', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword']);
 Route::get('/transactions/game/{status}', [TransactionController::class, 'getAllTransactionsGameTotal']);
 Route::get('/transactions/game/{status}/{game_target}', [TransactionController::class, 'getUserTransactionsByGame']);
-Route::post('/transactions/detail/{id}', [TransactionController::class, 'updateTransactionStatus']);
+Route::patch('/transactions/detail/{id}', [TransactionController::class, 'updateTransactionStatus']);
 Route::get('/transactions/detail/{transaction_id}', [TransactionController::class, 'getTransactionDetail']);
 Route::get('/products/game/{game_id}', [ProductController::class, 'getProductsByGame']);
 Route::get('/products/game', [ProductController::class, 'getGames']);
