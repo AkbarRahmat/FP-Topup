@@ -43,4 +43,24 @@ class ProductController extends Controller
             'data' => $games
         ]);
     }
+    public function updatePrice(Request $request, $product_id)
+    {
+        // Validasi input
+        $validatedData = $request->validate([
+            'price' => 'required|integer|min:0',
+        ]);
+
+        // Temukan produk berdasarkan UUID
+        $product = Product::find($product_id);
+
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        // Update harga produk
+        $product->price = $validatedData['price'];
+        $product->save();
+
+        return response()->json(['message' => 'Product price updated successfully'], 200);
+    }
 }
