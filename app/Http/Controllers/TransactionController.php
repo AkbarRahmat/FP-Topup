@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Product;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Game;
 use App\Models\User;
 use App\Models\UserGame;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
+
 
 
 
@@ -243,5 +246,88 @@ if ($request->has('processed_proof')) {
                 ],
             ]
         ]);
+    }
+    public function getUserTransaction(Request $request)
+    {
+        // Validasi input
+        $validatedData = $request->validate([
+            'userId' => 'required|string',
+            'nickname' => 'required|string',
+            'whatsapp' => 'required|string',
+            'product' => 'required|string', // Ubah tipe menjadi string karena ini UUID
+            'vendor' => 'required|string',
+            'date' => 'required|date',
+        ]);
+
+        // Pisahkan userId menjadi globalid dan server jika mungkin
+        $userId = $validatedData['userId'];
+        $globalid = null;
+        $server = null;
+
+        // Cek apakah userId memiliki tanda kurung '()'
+        if (strpos($userId, '(') !== false && strpos($userId, ')') !== false) {
+            list($globalid, $server) = explode('(', rtrim($userId, ')'));
+        } else {
+            // Jika tidak ada tanda kurung, globalid adalah userId dan server dijadikan null
+            $globalid = $userId;
+            $server = null;
+        }
+
+        // Generate password berdasarkan username
+        $temporaryPassword = 'user_' . $globalid . '_userpw';
+
+        // Hash password menggunakan bcrypt
+        $hashedPassword = Hash::make($temporaryPassword);
+
+        // Buat atau temukan User
+        $user = User::firstOrCreate(
+            ['phone' => $validatedData['whatsapp']],
+            [
+                'username' => 'user_' . $globalid,
+                'password' => $hashedPassword,  // Menggunakan hashed password
+                'role' => 'user',
+                'status' => 'pending',
+                'last_login' => now(),
+            ]
+        );
+
+        // Buat atau temukan UserGame
+        $userGame = UserGame::firstOrCreate(
+            ['globalid' => $globalid, 'server' => $server],
+            [
+                'username' => $validatedData['nickname'],
+            ]
+        );
+
+        // Temukan Produk berdasarkan UUID
+        $product = Product::where('id', $validatedData['product'])->first();
+
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        // Hitung total biaya
+        $totalCost = $product->price + 2000;
+
+        // Buat Payment
+        $payment = Payment::create([
+            'vendor' => $validatedData['vendor'],
+            'status' => 'pending',
+            'product_price' => $product->price,
+            'seller_cost' => 1000,
+            'service_cost' => 1000,
+            'total_cost' => $totalCost,
+            'paid_price' => $totalCost,  // paid_price diisi dengan total_cost
+        ]);
+
+        // Buat Transaction
+        $transaction = Transaction::create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'usergame_id' => $userGame ? $userGame->id : null,
+            'payment_id' => $payment->id,
+        ]);
+
+        return response()->json(['message' => 'Transaction created successfully'], 201);
     }
 }

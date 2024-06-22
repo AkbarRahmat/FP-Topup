@@ -56,10 +56,10 @@ class User extends Authenticatable implements JWTSubject
      * @param  string  $value
      * @return void
      */
-    public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = bcrypt($password);
-    }
+    // public function setPasswordAttribute($password)
+    // {
+    //     $this->attributes['password'] = bcrypt($password);
+    // }
       /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
@@ -71,6 +71,15 @@ class User extends Authenticatable implements JWTSubject
     protected $dates = [
         'otp_expires_at',
     ];
+
+    public function setPasswordAttribute($password)
+    {
+        if ($password) {
+            $this->attributes['password'] = bcrypt($password);
+        } else {
+            $this->attributes['password'] = null;
+        }
+    }
 
     public function getJWTIdentifier()
     {

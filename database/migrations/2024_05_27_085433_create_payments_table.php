@@ -22,8 +22,8 @@ class CreatePaymentsTable extends Migration
             $table->integer('service_cost');
             $table->integer('total_cost');
             $table->integer('paid_price');
-            $table->integer('refund_cost');
-            $table->integer('debt_cost');
+            $table->integer('refund_cost')->default(0);
+            $table->integer('debt_cost')->default(0);   
             $table->timestamps();
         });
     }
