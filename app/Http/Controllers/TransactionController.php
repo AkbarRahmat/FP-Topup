@@ -105,6 +105,7 @@ class TransactionController extends Controller
             'data' => $result
         ]);
     }
+
     public function updateTransactionStatus(Request $request, $id)
     {
         // Validasi input
@@ -140,46 +141,10 @@ class TransactionController extends Controller
             $transaction->processed_by = $request->input('processed_by');
         }
 
-        // Mengelola processed_proof jika disertakan
-      // Mengelola processed_proof jika disertakan sebagai URL
-if ($request->has('processed_proof')) {
-    $url = $request->input('processed_proof');
-    
-    // Validasi URL (opsional, tapi disarankan)
-    if (filter_var($url, FILTER_VALIDATE_URL)) {
-        // Mengambil konten gambar dari URL
-        $imageContent = file_get_contents($url);
-        
-        if ($imageContent !== false) {
-            // Membuat nama file unik
-            $fileName = time() . '_' . basename($url);
-            
-            // Menyimpan gambar ke penyimpanan lokal
-            $filePath = 'proofs/' . $fileName;
-            Storage::disk('public')->put($filePath, $imageContent);
-            
-            // Menyimpan path file ke database
-            $transaction->processed_proof = $filePath;
-        } else {
-            // Handle error jika gagal mengambil gambar
-            return response()->json(['error' => 'Gagal mengambil gambar dari URL'], 400);
-        }
-    } else {
-        // Handle error jika URL tidak valid
-        return response()->json(['error' => 'URL tidak valid'], 400);
+        // Fix Bug Later...
     }
-}
 
-        // Simpan transaksi yang telah diperbarui
-        $transaction->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'success_update_transaction',
-            'data' => $transaction,
-        ]);
-    }
-   public function getTransactionDetail($transaction_id): JsonResponse
+    public function getTransactionDetail($transaction_id): JsonResponse
     {
         // Get transaction details
         $transaction = Transaction::with(['user', 'usergame', 'product', 'payment'])->find($transaction_id);
@@ -247,87 +212,76 @@ if ($request->has('processed_proof')) {
             ]
         ]);
     }
-    public function getUserTransaction(Request $request)
+
+    public function createUserTransaction(Request $request)
     {
-        // Validasi input
-        $validatedData = $request->validate([
-            'userId' => 'required|string',
-            'nickname' => 'required|string',
-            'whatsapp' => 'required|string',
-            'product' => 'required|string', // Ubah tipe menjadi string karena ini UUID
-            'vendor' => 'required|string',
-            'date' => 'required|date',
+        $input = $request->validate([
+            'global_id' => 'required|string',
+            'server' => 'required|string',
+            'phone' => 'required|string|numeric',
+            'product_id' => 'required|string',
+            'vendor' => 'required|string'
         ]);
 
-        // Pisahkan userId menjadi globalid dan server jika mungkin
-        $userId = $validatedData['userId'];
-        $globalid = null;
-        $server = null;
+        // Generate password
+        $hashedPassword = Hash::make('user_' . $input['global_id'] . '_userpw');
 
-        // Cek apakah userId memiliki tanda kurung '()'
-        if (strpos($userId, '(') !== false && strpos($userId, ')') !== false) {
-            list($globalid, $server) = explode('(', rtrim($userId, ')'));
-        } else {
-            // Jika tidak ada tanda kurung, globalid adalah userId dan server dijadikan null
-            $globalid = $userId;
-            $server = null;
-        }
+        // Create
+        $user = User::Create([
+            'phone' => $input['phone'],
+            'username' => 'user_' . $input['global_id'],
+            'password' => $hashedPassword,
+            'role' => 'buyer',
+            'status' => 'limited',
+            'last_login' => now()
+        ]);
 
-        // Generate password berdasarkan username
-        $temporaryPassword = 'user_' . $globalid . '_userpw';
+        $userGame = UserGame::Create([
+            'globalid' => $input['global_id'],
+            'server' => $input['server']
+        ]);
 
-        // Hash password menggunakan bcrypt
-        $hashedPassword = Hash::make($temporaryPassword);
-
-        // Buat atau temukan User
-        $user = User::firstOrCreate(
-            ['phone' => $validatedData['whatsapp']],
-            [
-                'username' => 'user_' . $globalid,
-                'password' => $hashedPassword,  // Menggunakan hashed password
-                'role' => 'user',
-                'status' => 'pending',
-                'last_login' => now(),
-            ]
-        );
-
-        // Buat atau temukan UserGame
-        $userGame = UserGame::firstOrCreate(
-            ['globalid' => $globalid, 'server' => $server],
-            [
-                'username' => $validatedData['nickname'],
-            ]
-        );
-
-        // Temukan Produk berdasarkan UUID
-        $product = Product::where('id', $validatedData['product'])->first();
+        // Get Product
+        $product = Product::find($input['product_id']);
 
         if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'fail_get_product_notfound'
+            ], 404);
         }
 
-        // Hitung total biaya
-        $totalCost = $product->price + 2000;
-
-        // Buat Payment
-        $payment = Payment::create([
-            'vendor' => $validatedData['vendor'],
+        // Calculate Payment
+        $paymentData = [
             'status' => 'pending',
-            'product_price' => $product->price,
+            'vendor' => $input['vendor'],
+            'product_price' => $product['price'],
             'seller_cost' => 1000,
             'service_cost' => 1000,
-            'total_cost' => $totalCost,
-            'paid_price' => $totalCost,  // paid_price diisi dengan total_cost
-        ]);
+            'total_cost' => 0,
+            'paid_price' => 0,
+            'refund_cost' => 0,
+            'debt_cost' => 0
+        ];
+        calculateTransactionTotalCost($paymentData);
 
-        // Buat Transaction
+        // Create Payment
+        $payment = Payment::create($paymentData);
+
+        // Create Transaction
         $transaction = Transaction::create([
             'user_id' => $user->id,
             'product_id' => $product->id,
-            'usergame_id' => $userGame ? $userGame->id : null,
+            'usergame_id' => $userGame->id,
             'payment_id' => $payment->id,
         ]);
 
-        return response()->json(['message' => 'Transaction created successfully'], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'success_create_transaction',
+            'data' => [
+                'payment_url' => ''
+            ]
+        ], 201);
     }
 }

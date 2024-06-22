@@ -15,6 +15,10 @@
         "text": "Transaksi Diupdate"
     },
 
+    "success_create_transaction": {
+        "text": "Transaksi Dibuat"
+    },
+
     "fail_get_transaction_notfound": {
         "text": "Transaksi Tidak Ditemukan",
         "desc": "Pastikan Untuk Mengecek ID"

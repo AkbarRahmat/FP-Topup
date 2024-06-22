@@ -45,5 +45,5 @@ Route::get('/products/game', [ProductController::class, 'getGames']);
 Route::post('/file/image', [FileController::class, 'uploadImage']);
 Route::delete('/file/image/{filename}', [FileController::class, 'deleteImage']);
 
-Route::post('/transactions', [TransactionController::class, 'getUserTransaction']);
+Route::post('/transactions/game', [TransactionController::class, 'createUserTransaction']);
 
