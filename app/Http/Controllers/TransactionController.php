@@ -216,12 +216,13 @@ class TransactionController extends Controller
     public function createUserTransaction(Request $request)
     {
         $input = $request->validate([
-            'global_id' => 'required|string',
-            'server' => 'required|string',
+            'global_id' => 'required|string|numeric',
+            'server' => 'nullable|string',
             'phone' => 'required|string|numeric',
             'product_id' => 'required|string',
             'vendor' => 'required|string'
         ]);
+        $input['server'] = $input['server'] ?? null;
 
         // Generate password
         $hashedPassword = Hash::make('user_' . $input['global_id'] . '_userpw');
