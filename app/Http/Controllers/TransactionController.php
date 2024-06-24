@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Game;
 use App\Models\User;
 use App\Models\UserGame;
+use App\Services\TripayService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -21,7 +22,13 @@ use Illuminate\Support\Str;
 
 class TransactionController extends Controller
 {
+    protected $tripayService;
 
+    public function __construct(TripayService $tripayService)
+    {
+        $this->tripayService = $tripayService;
+    }
+    
     public function getAllTransactionsGameTotal($status)
     {
         // Query
@@ -215,6 +222,7 @@ class TransactionController extends Controller
 
     public function createUserTransaction(Request $request)
     {
+        
         $input = $request->validate([
             'global_id' => 'required|string|numeric',
             'server' => 'nullable|string',
@@ -252,6 +260,16 @@ class TransactionController extends Controller
             ], 404);
         }
 
+        $tripayResponse = $this->tripayService->createTransaction($product, $user);
+
+        if (!$tripayResponse['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'fail_create_transaction',
+                'debug' => $tripayResponse
+            ], 500);
+        }
+
         // Calculate Payment
         $paymentData = [
             'status' => 'pending',
@@ -281,7 +299,7 @@ class TransactionController extends Controller
             'success' => true,
             'message' => 'success_create_transaction',
             'data' => [
-                'payment_url' => ''
+                'payment_url' => $tripayResponse['data']['checkout_url'],
             ]
         ], 201);
     }
