@@ -12,7 +12,7 @@ class Payment extends Model
 
     protected $table = 'payments';
     protected $fillable = [
-        'vendor', 'status', 'product_price', 'seller_cost', 'service_cost', 'total_cost', 'paid_price', 'refund_cost', 'debt_cost'
+        'vendor', 'status', 'reference', 'product_price', 'seller_cost', 'service_cost', 'total_cost', 'paid_price', 'refund_cost', 'debt_cost', 'expired_at'
     ];
 
     public function transactions()

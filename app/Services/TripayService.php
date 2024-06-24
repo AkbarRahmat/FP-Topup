@@ -10,50 +10,47 @@ class TripayService
 {
     private $baseUrl;
     private $privateKey;
+    private $privateToken;
     private $merchantCode;
-    private $merchantRef;
-    private $token;
 
     public function __construct()
     {
         $this->baseUrl = env('TRIPAY_BASE_URL');
         $this->privateKey = env('TRIPAY_PRIVATE_KEY');
+        $this->privateToken = env('TRIPAY_PRIVATE_TOKEN');
         $this->merchantCode = env('TRIPAY_MERCHANT_CODE');
-        $this->merchantRef = env('TRIPAY_MERCHANT_REF');
-        $this->token = env('TRIPAY_TOKEN');
     }
 
-    public function createTransaction($product, $user)
+    public function createTransaction($product, $game, $user, $additional)
     {
-        $response = [];
         $data = [
             'method' => "QRIS2",
-            'merchant_ref' => $this->merchantRef,
-            'amount' => $product->price,
+            'merchant_ref' => '',
+            'amount' => $product->price + $additional['seller_cost'],
             'customer_name' => $user->username,
-            'customer_email' => "transactionkaf@gmail.com",
+            'customer_email' => "transaction_kaf@gmail.com",
             'customer_phone' => $user->phone,
             'order_items' => [
                 [
                     'sku' => "TOPUP",
                     'name' => $product->name,
-                    'price' => $product->price,
+                    'price' => $product->price + $additional['seller_cost'],
                     'quantity' => 1,
                 ],
             ],
             'callback_url' => "https://domainanda.com/callback",
             'return_url' => "https://domainanda.com/redirect",
-            'expired_time' => (time() + (24 * 60 * 60)), // Set expired time (optional)
             'signature' => ''
         ];
 
-        $signatureData = $this->merchantCode . $this->merchantRef . $data['amount'];
-        $data['signature'] = hash_hmac('sha256', $signatureData, $this->privateKey);
+        $data['merchant_ref'] = strtoupper('INV-GAME-' . $game->code . '-' . str_replace(' ', '', $product->name));
+        $data['signature'] = hash_hmac('sha256', $this->merchantCode . $data['merchant_ref'] . $data['amount'], $this->privateKey);
 
+        $response = [];
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->token
+                'Authorization' => $this->privateToken
             ])->post("{$this->baseUrl}/transaction/create", $data)->json();
         } catch (\Throwable $e) {
             $response = [
@@ -72,7 +69,7 @@ class TripayService
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->token
+                'Authorization' => $this->privateToken
             ])->get("{$this->baseUrl}/transaction/detail?transaction_id=$transactionId")->json();
         } catch (\Exception $e) {
             $response = [

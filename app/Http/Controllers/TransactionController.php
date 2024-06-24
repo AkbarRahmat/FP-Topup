@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 
 
@@ -28,7 +29,7 @@ class TransactionController extends Controller
     {
         $this->tripayService = $tripayService;
     }
-    
+
     public function getAllTransactionsGameTotal($status)
     {
         // Query
@@ -222,7 +223,6 @@ class TransactionController extends Controller
 
     public function createUserTransaction(Request $request)
     {
-        
         $input = $request->validate([
             'global_id' => 'required|string|numeric',
             'server' => 'nullable|string',
@@ -251,7 +251,7 @@ class TransactionController extends Controller
         ]);
 
         // Get Product
-        $product = Product::find($input['product_id']);
+        $product = Product::with(['game'])->find($input['product_id']);
 
         if (!$product) {
             return response()->json([
@@ -260,7 +260,12 @@ class TransactionController extends Controller
             ], 404);
         }
 
-        $tripayResponse = $this->tripayService->createTransaction($product, $user);
+        // Cost
+        $additional = [
+            'seller_cost' => 1000
+        ];
+
+        $tripayResponse = $this->tripayService->createTransaction($product, $product->game, $user, $additional);
 
         if (!$tripayResponse['success']) {
             return response()->json([
@@ -269,20 +274,23 @@ class TransactionController extends Controller
                 'debug' => $tripayResponse
             ], 500);
         }
+        $tripayData = $tripayResponse['data'];
 
         // Calculate Payment
         $paymentData = [
             'status' => 'pending',
-            'vendor' => $input['vendor'],
+            'vendor' => 'Tripay ' . $tripayData['payment_name'],
+            'reference' => $tripayData['reference'],
             'product_price' => $product['price'],
-            'seller_cost' => 1000,
-            'service_cost' => 1000,
+            'seller_cost' => $additional['seller_cost'],
+            'service_cost' => $tripayData['total_fee'],
             'total_cost' => 0,
             'paid_price' => 0,
             'refund_cost' => 0,
-            'debt_cost' => 0
+            'debt_cost' => 0,
+            'expired_at' => Carbon::createFromTimestamp($tripayData['expired_time'])->format('Y-m-d H:i:s')
         ];
-        calculateTransactionTotalCost($paymentData);
+        calculateTransactionTotalCost($paymentData, false);
 
         // Create Payment
         $payment = Payment::create($paymentData);
@@ -299,7 +307,7 @@ class TransactionController extends Controller
             'success' => true,
             'message' => 'success_create_transaction',
             'data' => [
-                'payment_url' => $tripayResponse['data']['checkout_url'],
+                'payment_url' => $tripayData['checkout_url'],
             ]
         ], 201);
     }

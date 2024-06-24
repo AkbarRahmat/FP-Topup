@@ -27,7 +27,7 @@ class ProductController extends Controller
     }
     public function getGames()
     {
-        $games = Game::all(['id', 'name']);
+        $games = Game::all(['id', 'name', 'code']);
 
         if ($games->isEmpty()) {
             return response()->json([
