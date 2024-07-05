@@ -35,7 +35,11 @@ Route::post('forgot-password', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword']);
 
 Route::get('/transactions/game/{status}', [TransactionController::class, 'getAllTransactionsGameTotal']);
-Route::get('/transactions/game/{status}/{game_target}', [TransactionController::class, 'getUserTransactionsByGame']);
+
+Route::middleware('role-everyone')->group(function() {
+    Route::get('/transactions/game/{status}/{game_target}', [TransactionController::class, 'getUserTransactionsByGame']);
+});
+
 Route::patch('/transactions/detail/{id}', [TransactionController::class, 'updateTransactionStatus']);
 Route::get('/transactions/detail/{transaction_id}', [TransactionController::class, 'getTransactionDetail']);
 

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Product;
 use App\Models\Payment;
+use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Game;
 use App\Models\User;
@@ -14,6 +15,7 @@ use App\Services\TripayService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -72,8 +74,10 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function getUserTransactionsByGame($status, $game_target)
+    public function getUserTransactionsByGame(Request $request, $status, $game_target)
     {
+        $user = $request->user;
+
         // Query
         $transactions = DB::table('transactions');
         $transactions->join('users', 'transactions.user_id', '=', 'users.id');
@@ -87,13 +91,18 @@ class TransactionController extends Controller
         // Check UUID
         if (isUUID($game_target)) {
             $transactions->where('products.game_id', $game_target);
-        } else {
+        } else if ($game_target != 'all') {
             $transactions->where('games.name', $game_target);
         }
 
         // Filter Status
         if ($status && $status != 'all') {
             $transactions->where('transactions.status', $status);
+        }
+
+        // Filter User
+        if ($user->role != 'admin' && $user->role != 'seller') {
+            $transactions->where('transactions.user_id', $user->id);
         }
 
         // Data Result
@@ -232,24 +241,6 @@ class TransactionController extends Controller
         ]);
         $input['server'] = $input['server'] ?? null;
 
-        // Generate password
-        $hashedPassword = Hash::make('user_' . $input['global_id'] . '_userpw');
-
-        // Create
-        $user = User::Create([
-            'phone' => $input['phone'],
-            'username' => 'user_' . $input['global_id'],
-            'password' => $hashedPassword,
-            'role' => 'buyer',
-            'status' => 'limited',
-            'last_login' => now()
-        ]);
-
-        $userGame = UserGame::Create([
-            'globalid' => $input['global_id'],
-            'server' => $input['server']
-        ]);
-
         // Get Product
         $product = Product::with(['game'])->find($input['product_id']);
 
@@ -259,6 +250,40 @@ class TransactionController extends Controller
                 'message' => 'fail_get_product_notfound'
             ], 404);
         }
+
+        // Generate
+        $credential = [
+            'username' => 'user_' . $input['global_id'],
+            'password' => 'user_' . $input['global_id'] . '_userpw'
+        ];
+
+        if (!Auth::attempt($credential)) {
+            // Create
+            $user = User::Create([
+                'phone' => $input['phone'],
+                'username' => $credential['username'],
+                'password' => $credential['password'],
+                'role' => 'buyer',
+                'status' => 'limited',
+                'last_login' => now()
+            ]);
+        } else {
+            $user = Auth::user();
+        }
+
+        $userGame = UserGame::firstOrCreate([
+            'globalid' => $input['global_id'],
+            'server' => $input['server']
+        ]);
+
+        // Token
+        $payload = [
+            "sub" => $user['id'],
+            "iat" => now()->timestamp,
+            "exp" => now()->timestamp + 1200
+        ];
+
+        $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
 
         // Cost
         $additional = [
@@ -306,6 +331,7 @@ class TransactionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'success_create_transaction',
+            'token' => $token,
             'data' => [
                 'payment_url' => $tripayData['checkout_url'],
             ]

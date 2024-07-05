@@ -71,12 +71,6 @@ class AuthController extends Controller
 
         $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
 
-        // Log::create([
-        //     'module' => 'login',
-        //     'action' => 'login akun',
-        //     'useraccess' => $user['email'],
-        // ]);
-
         return response()->json([
             "success" => true,
             "message" => "success_register",

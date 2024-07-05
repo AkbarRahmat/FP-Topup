@@ -1,4 +1,12 @@
 {
+    "fail_auth_token": {
+        "text": "Token tidak Valid"
+    },
+
+    "fail_get_user_notfound": {
+        "text": "User tidak Ditemukan"
+    },
+
     "success_get_product": {
         "text": "Prodak Ditemukan"
     },
