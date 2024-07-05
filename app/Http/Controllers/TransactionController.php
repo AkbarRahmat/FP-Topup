@@ -331,7 +331,7 @@ class TransactionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'success_create_transaction',
-            'token' => $token,
+            'token' => "Bearer {$token}",
             'data' => [
                 'payment_url' => $tripayData['checkout_url'],
             ]
