@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class EveryoneMiddleware
+class BuyerMiddleware
 {
     /**
      * Handle an incoming request.
@@ -18,7 +18,7 @@ class EveryoneMiddleware
     {
         $user = decodeJwtUser($request->bearerToken());
 
-        if (!in_array($user->role, ['admin', 'buyer', 'seller'])) {
+        if (!in_array($user->role, ['buyer'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'fail_auth_role',

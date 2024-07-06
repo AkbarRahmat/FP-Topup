@@ -1,4 +1,8 @@
 {
+    "success_generate_user": {
+        "text": "User Berhasil di Generate"
+    },
+
     "fail_auth_token": {
         "text": "Token tidak Valid"
     },

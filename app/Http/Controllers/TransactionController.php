@@ -240,6 +240,7 @@ class TransactionController extends Controller
             'vendor' => 'required|string'
         ]);
         $input['server'] = $input['server'] ?? null;
+        $user = $request->user;
 
         // Get Product
         $product = Product::with(['game'])->find($input['product_id']);
@@ -251,39 +252,11 @@ class TransactionController extends Controller
             ], 404);
         }
 
-        // Generate
-        $credential = [
-            'username' => 'user_' . $input['global_id'],
-            'password' => 'user_' . $input['global_id'] . '_userpw'
-        ];
-
-        if (!Auth::attempt($credential)) {
-            // Create
-            $user = User::Create([
-                'phone' => $input['phone'],
-                'username' => $credential['username'],
-                'password' => $credential['password'],
-                'role' => 'buyer',
-                'status' => 'limited',
-                'last_login' => now()
-            ]);
-        } else {
-            $user = Auth::user();
-        }
-
+        // Game Account
         $userGame = UserGame::firstOrCreate([
             'globalid' => $input['global_id'],
             'server' => $input['server']
         ]);
-
-        // Token
-        $payload = [
-            "sub" => $user['id'],
-            "iat" => now()->timestamp,
-            "exp" => now()->timestamp + 1200
-        ];
-
-        $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
 
         // Cost
         $additional = [
@@ -331,7 +304,6 @@ class TransactionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'success_create_transaction',
-            'token' => "Bearer {$token}",
             'data' => [
                 'payment_url' => $tripayData['checkout_url'],
             ]
