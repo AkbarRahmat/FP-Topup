@@ -34,7 +34,7 @@ Route::get('/products/game/{game_id}', [ProductController::class, 'getProductsBy
 // Admin and Seller
 Route::middleware('role-admin-seller')->group(function() {
     Route::get('/transactions/game/{status}', [TransactionController::class, 'getAllTransactionsGameTotal']);
-    Route::patch('/transactions/detail/{id}', [TransactionController::class, 'updateTransactionStatus']);
+    Route::patch('/transactions/detail/{id}', [TransactionController::class, 'updateTransaction']);
 
     Route::post('/file/image', [FileController::class, 'uploadImage']);
 });

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('user_id');
             $table->foreign('user_id')->references('id')->on('users');
-            $table->enum('status', ['pending', 'processed', 'success'])->default('pending');
+            $table->enum('status', ['pending', 'processed', 'success', 'rejected'])->default('pending');
             $table->string('product_id');
             $table->foreign('product_id')->references('id')->on('products');
             $table->string('usergame_id')->nullable();

@@ -12,6 +12,7 @@ class UserController extends Controller
     public function generate(Request $request) {
         $input = $request->validate([
             'global_id' => 'required|numeric',
+            'phone' => 'required|numeric',
             'role' => 'required|string|in:buyer'
         ]);
 
@@ -39,7 +40,7 @@ class UserController extends Controller
         $payload = [
             "sub" => $user['id'],
             "iat" => now()->timestamp,
-            "exp" => now()->timestamp + 1200
+            "exp" => now()->timestamp + 7200
         ];
 
         $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');

@@ -123,13 +123,14 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function updateTransactionStatus(Request $request, $id)
+    public function updateTransaction(Request $request, $id)
     {
+        $user = $request->user;
+
         // Validasi input
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:processed,success',
-            'processed_by' => 'nullable|exists:users,id',
-            'processed_proof' => 'required_if:status,success|url', // Mengubah validasi untuk menerima URL
+            'status' => 'required|in:success,rejected',
+            'processed_proof' => 'required_if:status,success|string'
         ]);
 
         if ($validator->fails()) {
@@ -152,13 +153,19 @@ class TransactionController extends Controller
 
         // Update status transaksi
         $transaction->status = $request->input('status');
+        $transaction->processed_by = $user->id;
 
-        // Update processed_by jika disertakan
-        if ($request->has('processed_by')) {
-            $transaction->processed_by = $request->input('processed_by');
+        if ($transaction->status == 'success') {
+            $transaction->processed_proof = $request->input('processed_proof');
         }
 
-        // Fix Bug Later...
+        // Create
+        $transaction->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'success_updated'
+        ]);
     }
 
     public function getTransactionDetail($transaction_id): JsonResponse

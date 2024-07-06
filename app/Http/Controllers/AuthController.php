@@ -66,7 +66,7 @@ class AuthController extends Controller
         $payload = [
             "sub" => $resuser['id'],
             "iat" => now()->timestamp,
-            "exp" => now()->timestamp + 1200
+            "exp" => now()->timestamp + 7200
         ];
 
         $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
@@ -94,7 +94,7 @@ class AuthController extends Controller
         $payload = [
             "sub" => $resuser['id'],
             "iat" => now()->timestamp,
-            "exp" => now()->timestamp + 1200
+            "exp" => now()->timestamp + 7200
         ];
 
         $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
