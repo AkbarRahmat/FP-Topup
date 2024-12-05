@@ -23,7 +23,7 @@ class TransactionFactory extends Factory
         // Usergame Data
         if ($game['code'] == 'pubgm') {
             $usergame = UserGame::factory()->create(['username' => null, 'server' => null]);
-        } else if($game['code'] == 'epep') {
+        } else if($game['code'] == 'ff') {
             $usergame = UserGame::factory()->create(['server' => null]);
         } else {
             $usergame = UserGame::factory()->create();

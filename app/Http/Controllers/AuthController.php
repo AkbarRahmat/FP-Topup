@@ -12,9 +12,16 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Models\Log;
 use Illuminate\Support\Facades\Http;
 use App\Models\Product;
+use App\Services\MessageService;
 
 class AuthController extends Controller
 {
+    protected $messageService;
+
+    public function __construct(MessageService $messageService)
+    {
+        $this->messageService = $messageService;
+    }
 
     public function register(Request $request)
     {
@@ -43,7 +50,7 @@ class AuthController extends Controller
         $user['otp_verification'] = generateRandomString(6);
 
         if ($user['phone']) {
-            $this->sendOtpPhone($user['phone'], $user['otp_verification']);
+            $this->messageService->sendOtpPhone($user['phone'], $user['otp_verification']);
         } elseif ($user['email']) {
             // $this->sendOtpEmail($user['email'], $user['otp_verification']);
         } else {
@@ -59,39 +66,16 @@ class AuthController extends Controller
         $payload = [
             "sub" => $resuser['id'],
             "iat" => now()->timestamp,
-            "exp" => now()->timestamp + 1200
+            "exp" => now()->timestamp + 7200
         ];
 
         $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
-
-        // Log::create([
-        //     'module' => 'login',
-        //     'action' => 'login akun',
-        //     'useraccess' => $user['email'],
-        // ]);
 
         return response()->json([
             "success" => true,
             "message" => "success_register",
             "token" => "Bearer {$token}"
         ], 200);
-    }
-
-    private function sendOtpPhone($phone, $otp)
-    {
-        $url = env('WHATSAPP_GATEAWAY_URL') . "/api/messages";
-        $token = env('WHATSAPP_GATEAWAY_TOKEN');
-
-        $data = [
-            "phone" => "$phone",
-            "text" => "Kode Otp anda adalah\n*" . $otp . "*",
-        ];
-
-
-        return Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => $token
-        ])->post($url, $data);
     }
 
     public function login(Request $request)
@@ -110,7 +94,7 @@ class AuthController extends Controller
         $payload = [
             "sub" => $resuser['id'],
             "iat" => now()->timestamp,
-            "exp" => now()->timestamp + 1200
+            "exp" => now()->timestamp + 7200
         ];
 
         $token = JWT::encode($payload,env('JWT_SECRET_KEY'),'HS256');
@@ -136,7 +120,7 @@ class AuthController extends Controller
             'expires_in' => config('jwt.ttl') * 60
         ]);
     }
-  
+
 }
 
 

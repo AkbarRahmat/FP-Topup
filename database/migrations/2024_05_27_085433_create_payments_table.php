@@ -17,14 +17,16 @@ class CreatePaymentsTable extends Migration
             $table->uuid('id')->primary();
             $table->string('vendor');
             $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
+            $table->string('reference');
             $table->integer('product_price');
             $table->integer('seller_cost');
             $table->integer('service_cost');
             $table->integer('total_cost');
             $table->integer('paid_price');
-            $table->integer('refund_cost')->default(0);
-            $table->integer('debt_cost')->default(0);   
+            $table->integer('refund_cost');
+            $table->integer('debt_cost');
             $table->timestamps();
+            $table->timestamp('expired_at')->nullable();
         });
     }
 

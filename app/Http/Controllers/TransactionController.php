@@ -6,21 +6,31 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Product;
 use App\Models\Payment;
+use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Game;
 use App\Models\User;
 use App\Models\UserGame;
+use App\Services\TripayService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 
 
 
 class TransactionController extends Controller
 {
+    protected $tripayService;
+
+    public function __construct(TripayService $tripayService)
+    {
+        $this->tripayService = $tripayService;
+    }
 
     public function getAllTransactionsGameTotal($status)
     {
@@ -64,8 +74,10 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function getUserTransactionsByGame($status, $game_target)
+    public function getUserTransactionsByGame(Request $request, $status, $game_target)
     {
+        $user = $request->user;
+
         // Query
         $transactions = DB::table('transactions');
         $transactions->join('users', 'transactions.user_id', '=', 'users.id');
@@ -79,13 +91,18 @@ class TransactionController extends Controller
         // Check UUID
         if (isUUID($game_target)) {
             $transactions->where('products.game_id', $game_target);
-        } else {
+        } else if ($game_target != 'all') {
             $transactions->where('games.name', $game_target);
         }
 
         // Filter Status
         if ($status && $status != 'all') {
             $transactions->where('transactions.status', $status);
+        }
+
+        // Filter User
+        if ($user->role != 'admin' && $user->role != 'seller') {
+            $transactions->where('transactions.user_id', $user->id);
         }
 
         // Data Result
@@ -106,13 +123,14 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function updateTransactionStatus(Request $request, $id)
+    public function updateTransaction(Request $request, $id)
     {
+        $user = $request->user;
+
         // Validasi input
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:processed,success',
-            'processed_by' => 'nullable|exists:users,id',
-            'processed_proof' => 'required_if:status,success|url', // Mengubah validasi untuk menerima URL
+            'status' => 'required|in:success,rejected',
+            'processed_proof' => 'required_if:status,success|string'
         ]);
 
         if ($validator->fails()) {
@@ -135,13 +153,19 @@ class TransactionController extends Controller
 
         // Update status transaksi
         $transaction->status = $request->input('status');
+        $transaction->processed_by = $user->id;
 
-        // Update processed_by jika disertakan
-        if ($request->has('processed_by')) {
-            $transaction->processed_by = $request->input('processed_by');
+        if ($transaction->status == 'success') {
+            $transaction->processed_proof = $request->input('processed_proof');
         }
 
-        // Fix Bug Later...
+        // Create
+        $transaction->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'success_updated'
+        ]);
     }
 
     public function getTransactionDetail($transaction_id): JsonResponse
@@ -223,27 +247,10 @@ class TransactionController extends Controller
             'vendor' => 'required|string'
         ]);
         $input['server'] = $input['server'] ?? null;
-
-        // Generate password
-        $hashedPassword = Hash::make('user_' . $input['global_id'] . '_userpw');
-
-        // Create
-        $user = User::Create([
-            'phone' => $input['phone'],
-            'username' => 'user_' . $input['global_id'],
-            'password' => $hashedPassword,
-            'role' => 'buyer',
-            'status' => 'limited',
-            'last_login' => now()
-        ]);
-
-        $userGame = UserGame::Create([
-            'globalid' => $input['global_id'],
-            'server' => $input['server']
-        ]);
+        $user = $request->user;
 
         // Get Product
-        $product = Product::find($input['product_id']);
+        $product = Product::with(['game'])->find($input['product_id']);
 
         if (!$product) {
             return response()->json([
@@ -252,19 +259,43 @@ class TransactionController extends Controller
             ], 404);
         }
 
+        // Game Account
+        $userGame = UserGame::firstOrCreate([
+            'globalid' => $input['global_id'],
+            'server' => $input['server']
+        ]);
+
+        // Cost
+        $additional = [
+            'seller_cost' => 1000
+        ];
+
+        $tripayResponse = $this->tripayService->createTransaction($product, $product->game, $user, $additional);
+
+        if (!$tripayResponse['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'fail_create_transaction',
+                'debug' => $tripayResponse
+            ], 500);
+        }
+        $tripayData = $tripayResponse['data'];
+
         // Calculate Payment
         $paymentData = [
             'status' => 'pending',
-            'vendor' => $input['vendor'],
+            'vendor' => 'Tripay ' . $tripayData['payment_name'],
+            'reference' => $tripayData['reference'],
             'product_price' => $product['price'],
-            'seller_cost' => 1000,
-            'service_cost' => 1000,
+            'seller_cost' => $additional['seller_cost'],
+            'service_cost' => $tripayData['total_fee'],
             'total_cost' => 0,
             'paid_price' => 0,
             'refund_cost' => 0,
-            'debt_cost' => 0
+            'debt_cost' => 0,
+            'expired_at' => Carbon::createFromTimestamp($tripayData['expired_time'])->format('Y-m-d H:i:s')
         ];
-        calculateTransactionTotalCost($paymentData);
+        calculateTransactionTotalCost($paymentData, false);
 
         // Create Payment
         $payment = Payment::create($paymentData);
@@ -281,7 +312,7 @@ class TransactionController extends Controller
             'success' => true,
             'message' => 'success_create_transaction',
             'data' => [
-                'payment_url' => ''
+                'payment_url' => $tripayData['checkout_url'],
             ]
         ], 201);
     }
